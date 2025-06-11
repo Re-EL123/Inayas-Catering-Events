@@ -42,6 +42,7 @@
       box-shadow:0 2px 8px rgba(0,0,0,0.1); }
     footer { background:#5a3e36; color:#fff; padding:40px 0; }
     footer a { color:#d29b63; text-decoration:none; }
+    .video-banner { width:100%; height:auto; margin:40px 0; }
   </style>
 </head>
 <body id="profile">
@@ -78,7 +79,7 @@
   <section style="background:#fff4e8;">
     <div class="container">
       <h2>About Inayas</h2>
-      <p>Established in 2023 in South Africa, Inayas Catering & Events is a 100% Black-owned, BBBEE Level 1, CSD-registered company founded by Nolwazi Mhayise. We offer premium catering, event coordination, VIP protection, and more.</p>
+      <p>Established in 2023 in South Africa, Inayas Catering & Events is a 100% Black-owned, BBBEE Level 1, CSD-registered company founded by Hanifa Ntuli. We offer premium catering, event coordination, VIP protection, and more. Waitresses/Waiters available on request.</p>
       <div style="display:flex; flex-wrap:wrap; justify-content:center;">
         <div class="hex"><img src="assets/images/vision-mission-values/team.jpeg" alt="Team" style="width:100%"/></div>
         <div class="hex"><img src="assets/images/others/catering1.jpeg" alt="Catering" style="width:100%"/></div>
@@ -93,13 +94,6 @@
       <h2>Our Services</h2>
       <div class="grid-3">
         <div class="card">
-          <h3>Bar & Waitresses</h3>
-          <video class="card-video" width="100%" controls muted loop>
-            <source src="assets/images/gallery/gallery6.mp4" type="video/mp4">
-            Your browser does not support HTML5 video.
-          </video>
-        </div>
-        <div class="card">
           <h3>Catering</h3>
           <img src="assets/images/gallery/gallery1.jpeg" alt="Food" style="width:100%; border-radius:8px; margin-bottom:10px;"/>
           <p>Customized menus for weddings, birthdays, and corporate events.</p>
@@ -110,7 +104,7 @@
           <p>Full planning & management for seamless events.</p>
         </div>
         <div class="card">
-          <h3>VIP Catering</h3>
+          <h3>VIP Protection</h3>
           <img src="assets/images/others/vip.jpeg" alt="VIP" style="width:100%; border-radius:8px; margin-bottom:10px;"/>
           <p>Discrete security for high-profile guests.</p>
         </div>
@@ -119,12 +113,14 @@
           <img src="assets/images/menus/care1.jpeg" alt="Corporate" style="width:100%; border-radius:8px; margin-bottom:10px;"/>
           <p>Office breakfasts, lunches, and conferences.</p>
         </div>
-        <div class="card">
-          <h3>Tents & Toilets</h3>
-          <img src="assets/images/others/fotter-bg.jpeg" alt="Marquees" style="width:100%; border-radius:8px; margin-bottom:10px;"/>
-          <p>High-quality marquees and sanitary facilities.</p>
-        </div>
       </div>
+
+      <!-- Video Banner (creative usage instead of Bar & Waitresses card) -->
+      <video class="video-banner" controls muted loop>
+        <source src="assets/images/gallery/gallery6.mp4" type="video/mp4">
+        Your browser does not support HTML5 video.
+      </video>
+      <p style="text-align:center; font-style:italic;">Our team in action—professional service guaranteed.</p>
     </div>
   </section>
 
@@ -138,37 +134,6 @@
         <div class="mosaic"><img src="assets/images/gallery/gallery5.jpeg" alt="" style="width:100%;"/></div>
         <div class="mosaic"><img src="assets/images/gallery/gallery7.jpeg" alt="" style="width:100%;"/></div>
       </div>
-    </div>
-  </section>
-
-  <!-- SAMPLE MENUS -->
-  <section>
-    <div class="container">
-      <h2>Sample Menus (per person)</h2>
-      <div class="grid-3">
-        <div class="card">
-          <h3>Breakfast (R180)</h3>
-          <ul>
-            <li>3 Cereals</li><li>2 Proteins</li><li>Bread</li>
-            <li>Biscuits</li><li>Eggs</li><li>Coffee & Juice</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Lunch (R200)</h3>
-          <ul>
-            <li>2 Starches</li><li>2 Proteins</li><li>1 Vegetable</li>
-            <li>1 Salad</li><li>Soft Drink/Juice</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Supper (R250)</h3>
-          <ul>
-            <li>2 Starches</li><li>2 Vegetables</li><li>2 Salads</li>
-            <li>Dessert</li><li>Soft Drink/Juice</li>
-          </ul>
-        </div>
-      </div>
-      <p><em>We can cook other meats at no extra cost if provided.</em></p>
     </div>
   </section>
 
@@ -206,7 +171,7 @@
       type:'bar',
       data:{
         labels:['Management','Chefs','Staff','Volunteers'],
-        datasets:[{label:'Number of People',data:[5,8,20,10],backgroundColor:'rgba(210,155,99,0.7)'}]
+        datasets:[{label:'Number of People',data:[2,3,5,3],backgroundColor:'rgba(210,155,99,0.7)'}]
       },
       options:{responsive:true,plugins:{legend:{display:false}}}
     });
