@@ -13,35 +13,48 @@
   <style>
     * { box-sizing: border-box; margin:0; padding:0; font-family:'Montserrat',sans-serif; }
     body { background: #fff9f0; color: #333; line-height: 1.6; }
-    h1,h2,h3 { color: #c8a295; margin-bottom: 16px; }
+    h1,h2,h3 { color: #c8a295; margin-bottom: 16px; } /* lighter heading color */
     p, ul { margin-bottom: 16px; }
     .container { width:90%; max-width:1200px; margin:auto; }
-    section { padding:60px 0; }
+    section { padding:60px 0; position:relative; }
     /* Frames */
     .hex { width:180px; height:200px; clip-path: polygon(
-      25% 6.7%, 75% 6.7%,100% 50%,75% 93.3%,25% 93.3%,0% 50%);
+      25% 6.7%,75% 6.7%,100% 50%,75% 93.3%,25% 93.3%,0% 50%);
       overflow:hidden; margin:10px; display:inline-block; }
     .mosaic { width:150px; height:150px; clip-path:
       polygon(0 0,100% 0,100% 60%,60% 100%,0 100%); margin:10px; display:inline-block; }
     .circle { width:160px; height:160px; border-radius:50%; overflow:hidden; margin:10px; display:inline-block; }
-    /* Hero & Download */
-    .slide { position:relative; height:100vh; background:url('assets/images/others/header-bg.jpeg') center/cover; }
-    .slide .overlay { position:absolute; inset:0; background:rgba(90,62,54,0.6); }
-    .slide .content { position:relative; z-index:1; text-align:center; color:#fff; padding:25vh 10px; }
-    .btn-download { padding:12px 24px; background:#d29b63; color:#fff; border:none; border-radius:5px; cursor:pointer; }
-    .grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
-    .card { background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    /* Hero video */
+    .slide-video {
+      position:absolute; top:0; left:0; width:100%; height:100%;
+      object-fit:cover; z-index:0;
+    }
+    .overlay { position:absolute; top:0; left:0; width:100%; height:100%;
+      background: rgba(90,62,54,0.6); z-index:1; }
+    .content { position:relative; z-index:2; text-align:center; color:#fff;
+      padding:20vh 10px; }
+    .content h1 { font-size:3rem; }
+    .btn-download {
+      padding:12px 24px; background:#d29b63; color:#fff; border:none;
+      font-size:1rem; cursor:pointer; border-radius:5px;
+    }
+    .grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+      gap:20px; }
+    .card { background:#fff; padding:20px; border-radius:8px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1); }
     footer { background:#5a3e36; color:#fff; padding:40px 0; }
     footer a { color:#d29b63; text-decoration:none; }
-    /* Creative video frame */
-    .video-frame { position: relative; width:100%; padding-top:56.25%; overflow:hidden; margin-bottom:10px; }
-    .video-frame video { position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; }
   </style>
 </head>
 <body id="profile">
 
-  <!-- COVER HERO -->
-  <section class="slide">
+  <!-- COVER HERO (video background) -->
+  <section class="slide" style="height:100vh; overflow:hidden;">
+    <video class="slide-video" autoplay muted loop>
+      <source src="assets/images/gallery/gallery6.mp4" type="video/mp4">
+      <!-- fallback image -->
+      <img src="assets/images/others/header-bg.jpeg" alt="Cover">
+    </video>
     <div class="overlay"></div>
     <div class="content container">
       <h1>Inayas Catering & Events</h1>
@@ -54,10 +67,10 @@
   <section>
     <div class="container">
       <h2>Our Vision, Mission & Values</h2>
-      <div style="display:flex; flex-wrap:wrap; justify-content:center;">
-        <div class="circle"><img src="assets/images/vision-mission-values/mission1.jpeg" alt="Mission" /></div>
-        <div class="circle"><img src="assets/images/vision-mission-values/event1.jpeg" alt="Vision" /></div>
-        <div class="circle"><img src="assets/images/vision-mission-values/value.jpeg" alt="Values" /></div>
+      <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center;">
+        <div class="circle"><img src="assets/images/vision-mission-values/mission1.jpeg" alt="Mission" style="width:100%"/></div>
+        <div class="circle"><img src="assets/images/vision-mission-values/event1.jpeg" alt="Vision" style="width:100%"/></div>
+        <div class="circle"><img src="assets/images/vision-mission-values/value.jpeg" alt="Values" style="width:100%"/></div>
       </div>
       <h3>Mission</h3>
       <p>To deliver state-of-the-art catering & event management, ensuring client satisfaction and reaching 100% of the commercial and public market.</p>
@@ -72,13 +85,12 @@
   <section style="background:#fff4e8;">
     <div class="container">
       <h2>About Inayas</h2>
-      <p>Established in 2023 in South Africa, Inayas Catering & Events is a 100% Black-owned, BBBEE Level 1, CSD-registered company founded by Hanifa Ntuli. We offer premium catering, event coordination, VIP protection, and more.</p>
+      <p>Established in 2023 in South Africa, Inayas Catering & Events is a 100% Black-owned, BBBEE Level 1, CSD-registered company founded by Hanifa Ntuli. We offer premium catering, event coordination, and more.</p>
       <div style="display:flex; flex-wrap:wrap; justify-content:center;">
-        <div class="hex"><img src="assets/images/vision-mission-values/team.jpeg" alt="Team" /></div>
-        <div class="hex"><img src="assets/images/others/catering1.jpeg" alt="Catering" /></div>
-        <div class="hex"><img src="assets/images/others/catering2.jpeg" alt="Setup" /></div>
+        <div class="hex"><img src="assets/images/vision-mission-values/team.jpeg" alt="Team" style="width:100%"/></div>
+        <div class="hex"><img src="assets/images/others/catering1.jpeg" alt="Catering" style="width:100%"/></div>
+        <div class="hex"><img src="assets/images/others/catering2.jpeg" alt="Setup" style="width:100%"/></div>
       </div>
-      <p><em>Waitresses and waiters available on request.</em></p>
     </div>
   </section>
 
@@ -86,44 +98,23 @@
   <section>
     <div class="container">
       <h2>Our Services</h2>
+      <p><em>Waiters/Waitresses available on request.</em></p>
       <div class="grid-3">
-
-        <!-- Creative full-card video -->
-        <div class="card">
-          <h3>Experience Our Kitchen in Motion</h3>
-          <div class="video-frame">
-            <video autoplay muted loop>
-              <source src="assets/images/gallery/gallery6.mp4" type="video/mp4">
-              Your browser does not support HTML5 video.
-            </video>
-          </div>
-          <p>Get a behind-the-scenes look at our culinary craftsmanship.</p>
-        </div>
-
         <div class="card">
           <h3>Catering</h3>
           <img src="assets/images/gallery/gallery1.jpeg" alt="Food" style="width:100%; border-radius:8px; margin-bottom:10px;"/>
           <p>Customized menus for weddings, birthdays, and corporate events.</p>
         </div>
-
         <div class="card">
           <h3>Event Coordination</h3>
           <img src="assets/images/gallery/gallery2.jpeg" alt="Coordination" style="width:100%; border-radius:8px; margin-bottom:10px;"/>
           <p>Full planning & management for seamless events.</p>
         </div>
-
         <div class="card">
           <h3>Corporate Catering</h3>
           <img src="assets/images/menus/care1.jpeg" alt="Corporate" style="width:100%; border-radius:8px; margin-bottom:10px;"/>
           <p>Office breakfasts, lunches, and conferences.</p>
         </div>
-
-        <div class="card">
-          <h3>VIP Protection</h3>
-          <img src="assets/images/others/vip.jpeg" alt="VIP" style="width:100%; border-radius:8px; margin-bottom:10px;"/>
-          <p>Discrete security for high-profile guests.</p>
-        </div>
-
       </div>
     </div>
   </section>
@@ -133,28 +124,25 @@
     <div class="container">
       <h2>Gallery</h2>
       <div style="display:flex; flex-wrap:wrap; justify-content:center;">
-        <div class="mosaic"><img src="assets/images/gallery/gallery3.jpeg" alt="" /></div>
-        <div class="mosaic"><img src="assets/images/gallery/gallery4.jpeg" alt="" /></div>
-        <div class="mosaic"><img src="assets/images/gallery/gallery5.jpeg" alt="" /></div>
-        <div class="mosaic"><img src="assets/images/gallery/gallery7.jpeg" alt="" /></div>
+        <div class="mosaic"><img src="assets/images/gallery/gallery3.jpeg" alt="" style="width:100%;"/></div>
+        <div class="mosaic"><img src="assets/images/gallery/gallery4.jpeg" alt="" style="width:100%;"/></div>
+        <div class="mosaic"><img src="assets/images/gallery/gallery5.jpeg" alt="" style="width:100%;"/></div>
+        <div class="mosaic"><img src="assets/images/gallery/gallery7.jpeg" alt="" style="width:100%;"/></div>
       </div>
     </div>
   </section>
 
   <!-- IMPACT CHARTS -->
-  <section style="background:#fff4e8;">
+  <section>
     <div class="container">
       <h2>Impact & Team</h2>
-      <div style="display:flex; flex-wrap:wrap; justify-content:space-between;">
-
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;">
         <div style="flex:1; min-width:300px; padding:20px;">
           <canvas id="employmentChart"></canvas>
         </div>
-
         <div style="flex:1; min-width:300px; padding:20px;">
           <canvas id="outreachChart"></canvas>
         </div>
-
       </div>
     </div>
   </section>
@@ -173,7 +161,7 @@
   </footer>
 
   <script>
-    // Employment Bar Chart – updated numbers
+    // Employment Bar Chart (updated numbers)
     new Chart(document.getElementById('employmentChart'), {
       type:'bar',
       data:{
@@ -186,8 +174,7 @@
       },
       options:{responsive:true,plugins:{legend:{display:false}}}
     });
-
-    // Outreach Pie Chart (unchanged demo data)
+    // Outreach Pie Chart
     new Chart(document.getElementById('outreachChart'), {
       type:'pie',
       data:{
@@ -199,7 +186,6 @@
       },
       options:{responsive:true}
     });
-
     // PDF Download
     function downloadPDF(){
       html2pdf().set({margin:0.5,filename:'Inayas_Profile.pdf'}).from(document.getElementById('profile')).save();
