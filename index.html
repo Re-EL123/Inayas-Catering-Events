@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Inayas Catering & Events – Company Profile</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet"/>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin:0; padding:0; font-family: 'Montserrat', sans-serif; }
+    body { background: #fff9f0; color: #333; }
+    h1, h2, h3 { color: #5a3e36; }
+    .container { width: 90%; max-width:1200px; margin: auto; }
+    section { padding: 60px 0; }
+    .hex { width:200px; height:230px; clip-path: polygon(
+      25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0% 50%);
+      overflow:hidden; margin:10px; display:inline-block;
+      }
+    .mosaic { width:150px; height:150px; clip-path:
+      polygon(0 0, 100% 0, 100% 60%, 60% 100%, 0 100%); margin:10px; }
+    /* Slide styling */
+    .slide { position: relative; }
+    .slide .overlay { position:absolute; top:0; left:0; width:100%; height:100%; background: rgba(90,62,54,0.6);}
+    .slide h1 { font-size:3rem; margin-bottom:20px; }
+    .btn-download { padding:12px 24px; background:#d29b63; color:#fff; border:none;
+      font-size:1rem; cursor:pointer; border-radius:5px; }
+    /* Grid for services & menu */
+    .grid-3 { display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
+    .card { background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); }
+    /* Footer */
+    footer { background:#5a3e36; color:#fff; padding:40px 0; }
+    footer a { color:#d29b63; text-decoration:none; }
+  </style>
+</head>
+<body id="profile">
+
+  <!-- COVER SLIDE -->
+  <section class="slide" style="background:url('images/cover.jpg') center/cover; height:100vh;">
+    <div class="overlay"></div>
+    <div class="container" style="position:relative; z-index:1; text-align:center; padding-top:30vh;">
+      <h1>Inayas Catering & Events</h1>
+      <p style="font-size:1.2rem;">Unique Flavours, Unique Events</p>
+      <button class="btn-download" onclick="downloadPDF()">Download Profile as PDF</button>
+    </div>
+  </section>
+
+  <!-- ABOUT US -->
+  <section>
+    <div class="container">
+      <h2>About Us</h2>
+      <p>Founded in 2023 in South Africa, Inayas Catering & Events is a 100% Black-owned, BBBEE Level 1, CSD-registered company. We deliver world-class catering, event coordination, VIP protection, marquees, and more — all tailored to your needs.</p>
+      <div style="display:flex; flex-wrap:wrap; justify-content:center; margin-top:30px;">
+        <div class="hex"><img src="images/team1.jpg" alt="Team" style="width:100%;"/></div>
+        <div class="hex"><img src="images/event1.jpg" alt="Event" style="width:100%;"/></div>
+        <div class="hex"><img src="images/catering1.jpg" alt="Food" style="width:100%;"/></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section style="background:#fff4e8;">
+    <div class="container">
+      <h2>Our Services</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Bar Services & Waitresses</h3>
+          <img src="images/bar.jpg" alt="" style="width:100%; border-radius:6px; margin-bottom:10px;"/>
+          <p>Professional bartending and courteous staff for any event size.</p>
+        </div>
+        <div class="card">
+          <h3>Catering for All Events</h3>
+          <img src="images/catering2.jpg" alt="" style="width:100%; border-radius:6px; margin-bottom:10px;"/>
+          <p>Menus personalized to your occasion — weddings, birthdays, corporate.</p>
+        </div>
+        <div class="card">
+          <h3>Event Coordination & VIP Protection</h3>
+          <img src="images/vip.jpg" alt="" style="width:100%; border-radius:6px; margin-bottom:10px;"/>
+          <p>Seamless planning and discreet VIP security for peace of mind.</p>
+        </div>
+        <div class="card">
+          <h3>Corporate Catering</h3>
+          <img src="images/corporate.jpg" alt="" style="width:100%; border-radius:6px; margin-bottom:10px;"/>
+          <p>Business breakfasts, conferences, and office celebrations.</p>
+        </div>
+        <div class="card">
+          <h3>Tents, Marquees & Toilets Hire</h3>
+          <img src="images/marquee.jpg" alt="" style="width:100%; border-radius:6px; margin-bottom:10px;"/>
+          <p>High-quality shelters and sanitary solutions for outdoor events.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENU TEMPLATES -->
+  <section>
+    <div class="container">
+      <h2>Sample Event Menu (per person)</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Starters</h3>
+          <ul>
+            <li>2 Starches (e.g. Rice, Pap, Dumpling, Couscous)</li>
+            <li>2 Proteins (Fish, Stew, Chicken, Umleqwa, Amanqina - white meat only)</li>
+            <li>1 Vegetable</li>
+            <li>2 Salads</li>
+          </ul>
+          <p>R100 per guest</p>
+        </div>
+        <div class="card">
+          <h3>Main Meal</h3>
+          <p>Customized dishes to suit your palette</p>
+          <p>R200 per guest</p>
+        </div>
+        <div class="card">
+          <h3>Dessert</h3>
+          <p>Decadent sweet treats</p>
+          <p>R50 per guest</p>
+        </div>
+      </div>
+      <p style="margin-top:20px;"><em>We can cook any other meat at no extra cost if provided.</em></p>
+    </div>
+  </section>
+
+  <!-- IMPACT CHARTS -->
+  <section style="background:#fff4e8;">
+    <div class="container">
+      <h2>Our Impact & Team</h2>
+      <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center;">
+        <div style="flex:1; min-width:300px; padding:20px;">
+          <canvas id="employmentChart"></canvas>
+        </div>
+        <div style="flex:1; min-width:300px; padding:20px;">
+          <canvas id="outreachChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT & LEGAL -->
+  <footer>
+    <div class="container">
+      <h2>Talk to Us</h2>
+      <p><strong>Phone:</strong> 079 097 5335 | 079 376 8731</p>
+      <p><strong>Email:</strong> <a href="mailto:nolwazi.mhayise@gmail.com">nolwazi.mhayise@gmail.com</a> | <strong>Instagram:</strong> <a href="https://instagram.com/Inaya_Kayise" target="_blank">@Inaya_Kayise</a></p>
+      <h3>Bank Details</h3>
+      <p>Standard Bank | Acc: 10236362933 | Branch: 051001 | Cheque Account</p>
+      <h3>Company Info</h3>
+      <p>Reg: 2023/662510/07 | SARS TAX NO: 91044822798 | BBBEE Level 1 | CSD NO: MAAA1380503</p>
+    </div>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script>
+    // Employment Bar Chart
+    const ctx1 = document.getElementById('employmentChart').getContext('2d');
+    new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: ['Management','Chefs','Staff','Volunteers'],
+        datasets: [{
+          label: 'Number of People',
+          data: [5, 8, 20, 10],
+          backgroundColor: 'rgba(210,155,99,0.7)'
+        }]
+      },
+      options: { responsive:true, plugins:{ legend:{ display:false } } }
+    });
+
+    // Outreach Pie Chart
+    const ctx2 = document.getElementById('outreachChart').getContext('2d');
+    new Chart(ctx2, {
+      type: 'pie',
+      data: {
+        labels: ['Events Served','Meals Prepared','Clients Satisfied'],
+        datasets: [{
+          data: [120, 5000, 300],
+          backgroundColor: [
+            'rgba(210,155,99,0.7)',
+            'rgba(90,62,54,0.7)',
+            'rgba(255,205,86,0.7)'
+          ]
+        }]
+      },
+      options: { responsive:true }
+    });
+
+    // Download as PDF
+    function downloadPDF() {
+      const element = document.getElementById('profile');
+      html2pdf()
+        .set({ margin: 0.5, filename: 'Inayas_Profile.pdf', image: { type: 'jpeg', quality: 0.98 } })
+        .from(element)
+        .save();
+    }
+  </script>
+
+</body>
+</html>
