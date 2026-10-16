@@ -12,6 +12,7 @@
 
 <!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 
 <!-- Font Awesome (icons) -->
@@ -24,9 +25,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 
 <!-- Chart.js -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- html2pdf.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<!-- PDF engine: html2canvas + jsPDF (page-by-page A4 export) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
   :root{
@@ -43,7 +45,7 @@
     --container-pad: clamp(16px, 5vw, 40px);
   }
   *{box-sizing:border-box;margin:0;padding:0;font-family:'Montserrat',sans-serif;}
-  html{scroll-behavior:smooth;overflow-x:hidden;}
+  html{scroll-behavior:smooth;}
   body{background:var(--cream);color:var(--text);line-height:1.7;overflow-x:hidden;}
   img{max-width:100%;display:block;}
   h1,h2,h3{font-family:'Playfair Display',serif;color:var(--brown-dark);margin-bottom:16px;}
@@ -51,6 +53,7 @@
   h2::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:70px;height:3px;background:linear-gradient(90deg,var(--gold),var(--brown-dark));border-radius:4px;}
   p,ul{margin-bottom:16px;}
   a{text-decoration:none;}
+  a:focus-visible,button:focus-visible,.hamburger:focus-visible,.back-to-top:focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
   .container{width:92%;max-width:1200px;margin:auto;padding-left:var(--container-pad);padding-right:var(--container-pad);}
   section{padding:clamp(50px,8vw,80px) 0;position:relative;scroll-margin-top:80px;}
   .section-alt{background:var(--cream2);}
@@ -59,16 +62,21 @@
   /* ===== PRELOADER ===== */
   #preloader{position:fixed;inset:0;background:var(--brown-dark);z-index:9999;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease, visibility .6s ease;}
   #preloader img{width:90px;height:90px;border-radius:50%;animation:pulse 1.2s ease-in-out infinite;}
-  #preloader.hide{opacity:0;visibility:hidden;}
+  #preloader.hide{opacity:0;visibility:hidden;pointer-events:none;}
   @keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.15);opacity:.7;}}
 
-  /* ===== NAVBAR ===== */
+  /* ===== NAVBAR =====
+     The blurred/solid background lives on ::before (not on the nav itself)
+     because backdrop-filter on the nav would trap the fixed mobile menu
+     inside the nav's own height once the page is scrolled. */
   nav.navbar{position:fixed;top:0;left:0;width:100%;z-index:1000;display:flex;align-items:center;justify-content:space-between;padding:14px clamp(16px,4vw,5%);transition:var(--transition);background:transparent;}
-  nav.navbar.scrolled{background:rgba(90,62,54,0.95);backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(0,0,0,.2);padding:10px clamp(16px,4vw,5%);}
+  nav.navbar::before{content:'';position:absolute;inset:0;z-index:-1;background:rgba(90,62,54,0.95);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;transition:opacity .4s ease;pointer-events:none;}
+  nav.navbar.scrolled::before{opacity:1;}
+  nav.navbar.scrolled{box-shadow:0 4px 20px rgba(0,0,0,.2);padding:10px clamp(16px,4vw,5%);}
   .nav-logo{display:flex;align-items:center;gap:10px;min-width:0;}
   .nav-logo img{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);flex-shrink:0;}
   .nav-logo span{color:#fff;font-family:'Playfair Display',serif;font-weight:700;font-size:clamp(.85rem,2vw,1.1rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .nav-links{display:flex;gap:clamp(14px,2vw,28px);list-style:none;}
+  .nav-links{display:flex;gap:clamp(14px,2vw,28px);list-style:none;margin-bottom:0;}
   .nav-links a{color:#fff;font-weight:500;font-size:.95rem;position:relative;padding-bottom:4px;white-space:nowrap;}
   .nav-links a::after{content:'';position:absolute;bottom:0;left:0;width:0;height:2px;background:var(--gold);transition:var(--transition);}
   .nav-links a:hover::after{width:100%;}
@@ -85,7 +93,7 @@
     .nav-links a{font-size:.85rem;}
   }
   @media(max-width:900px){
-    .nav-links{position:fixed;top:0;right:-100%;height:100vh;width:min(78%,320px);background:var(--brown-dark);flex-direction:column;justify-content:center;align-items:center;transition:right .4s ease;gap:28px;box-shadow:-8px 0 30px rgba(0,0,0,.3);}
+    .nav-links{position:fixed;top:0;right:-100%;height:100vh;height:100dvh;width:min(78%,320px);background:var(--brown-dark);flex-direction:column;justify-content:center;align-items:center;transition:right .4s ease;gap:28px;box-shadow:-8px 0 30px rgba(0,0,0,.3);}
     .nav-links.open{right:0;}
     .nav-links a{font-size:1rem;}
     .nav-cta{display:none;}
@@ -97,13 +105,11 @@
 
   /* ===================================================================
      HERO
+     .hero-wrap holds the (overflow:hidden) hero section AND the floating
+     stat bar. The bar sits outside the section so it is never clipped.
   =================================================================== */
-  .slide{min-height:100svh;height:100vh;position:relative;background:#2a1b16;display:flex;align-items:center;}
-
-  /* Isolated visual layer: ONLY the video/overlay/blobs are clipped here.
-     This prevents the floating stats bar below from being cut off. */
-  .hero-visual{position:absolute;inset:0;overflow:hidden;z-index:0;}
-
+  .hero-wrap{position:relative;}
+  .slide{min-height:100vh;min-height:100svh;height:auto;padding:0;overflow:hidden;position:relative;background:#2a1b16;display:flex;align-items:center;}
   .slide-video{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0;}
   .overlay{position:absolute;inset:0;background:linear-gradient(160deg,rgba(40,25,20,.88) 0%,rgba(90,62,54,.65) 45%,rgba(40,25,20,.85) 100%);z-index:1;}
 
@@ -114,7 +120,7 @@
 
   .logo{position:absolute;top:18px;left:18px;width:clamp(54px,8vw,76px);height:clamp(54px,8vw,76px);border-radius:50%;object-fit:cover;border:3px solid var(--gold);z-index:3;box-shadow:0 8px 24px rgba(0,0,0,.4);}
 
-  .content{position:relative;z-index:2;text-align:center;color:#fff;width:100%;padding:90px 0 60px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .content{position:relative;z-index:2;text-align:center;color:#fff;width:100%;padding-top:90px;padding-bottom:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
 
   .hero-glass-card{
     max-width:760px;width:100%;
@@ -141,6 +147,7 @@
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
+    -webkit-text-fill-color:transparent;
     animation:shimmer 4s linear infinite;
   }
   @keyframes shimmer{
@@ -171,35 +178,38 @@
   .btn-whatsapp{background:#25D366;color:#fff;}
   .btn-whatsapp:hover{background:#1ebe57;transform:translateY(-3px);}
 
+  /* Floating stat bridge: straddles the hero's bottom edge (half over the
+     hero, half over the next section). Solid brown so the white text is
+     readable on BOTH the dark hero and the cream section below. */
   .hero-stats-bar{
-    position:absolute;left:50%;bottom:-44px;transform:translateX(-50%);
+    position:absolute;left:50%;bottom:0;transform:translate(-50%,50%);
     z-index:4;width:92%;max-width:920px;
     display:flex;gap:16px;
   }
   .hero-stat-card{
     flex:1;text-align:center;color:#fff;
-    background:rgba(255,255,255,.1);
-    border:1px solid rgba(255,255,255,.25);
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    background:linear-gradient(135deg,var(--brown-dark),#3f2a24);
+    border:1px solid var(--gold);
     border-radius:16px;padding:clamp(12px,2.5vw,18px) 8px;
-    box-shadow:0 14px 34px rgba(0,0,0,.25);
+    box-shadow:0 14px 34px rgba(0,0,0,.28);
     opacity:0;transform:translateY(30px);
     min-width:0;
   }
   .hero-stat-card i{color:var(--gold-light);font-size:clamp(1rem,2.4vw,1.3rem);margin-bottom:6px;display:block;}
-  .hero-stat-card .num{font-family:'Playfair Display',serif;font-size:clamp(1.1rem,3vw,1.6rem);font-weight:800;}
-  .hero-stat-card .lbl{font-size:clamp(.6rem,1.6vw,.72rem);text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.75);}
+  .hero-stat-card .num{font-family:'Playfair Display',serif;font-size:clamp(1.1rem,3vw,1.6rem);font-weight:800;line-height:1.3;}
+  .hero-stat-card .lbl{font-size:clamp(.6rem,1.6vw,.72rem);text-transform:uppercase;letter-spacing:.5px;color:rgba(255,255,255,.8);}
 
-  .scroll-cue{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);z-index:2;color:#fff;animation:bounce 1.8s infinite;font-size:1.2rem;opacity:.8;}
+  .scroll-cue{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);z-index:2;color:#fff;animation:bounce 1.8s infinite;font-size:1.2rem;opacity:.8;}
   @keyframes bounce{0%,100%{transform:translate(-50%,0);}50%{transform:translate(-50%,10px);}}
 
   #vmv{padding-top:clamp(90px,15vw,150px);}
 
   @media(max-width:760px){
-    .hero-stats-bar{position:static;transform:none;margin:30px auto 0;flex-wrap:wrap;}
+    .hero-stats-bar{position:static;transform:none;margin:0 auto;padding:24px 0 0;flex-wrap:wrap;}
     .hero-stat-card{min-width:130px;}
-    #vmv{padding-top:60px;}
-    .content{padding:80px 0 40px;}
+    #vmv{padding-top:40px;}
+    .content{padding-top:80px;padding-bottom:50px;}
+    .scroll-cue{bottom:12px;}
   }
   @media(max-width:420px){
     .hero-stats-bar{flex-direction:column;}
@@ -260,7 +270,7 @@
   .counters{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(20px,5vw,40px);margin-bottom:50px;}
   .counter-item{text-align:center;}
   .counter-item .count{font-size:clamp(2rem,5vw,3rem);font-weight:800;color:var(--brown-dark);font-family:'Playfair Display',serif;}
-  .counter-item .count span{color:var(--gold);}
+  .counter-item .count span{color:var(--gold);font-family:'Playfair Display',serif;}
   .counter-item .label{text-transform:uppercase;letter-spacing:1px;font-size:.78rem;color:#777;}
   .charts-flex{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:20px;}
   .chart-box{flex:1;min-width:280px;padding:clamp(14px,3vw,20px);background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);}
@@ -274,7 +284,7 @@
   .lead-form .row{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
   .lead-form .full{grid-column:1/-1;}
   .lead-form label{display:block;margin-bottom:6px;font-size:.85rem;color:var(--gold-light);}
-  .lead-form input,.lead-form select,.lead-form textarea{width:100%;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-family:'Montserrat',sans-serif;font-size:.95rem;}
+  .lead-form input,.lead-form select,.lead-form textarea{width:100%;padding:12px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-family:'Montserrat',sans-serif;font-size:.95rem;color-scheme:dark;}
   .lead-form input::placeholder,.lead-form textarea::placeholder{color:rgba(255,255,255,.5);}
   .lead-form input:focus,.lead-form select:focus,.lead-form textarea:focus{outline:2px solid var(--gold);background:rgba(255,255,255,.14);}
   .lead-form button{margin-top:24px;width:100%;justify-content:center;background:#25D366;color:#fff;padding:15px;font-size:clamp(.9rem,2vw,1.05rem);}
@@ -306,36 +316,39 @@
     .back-to-top{width:40px;height:40px;bottom:14px;right:76px;}
   }
 
+  @media(prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto;}
+    .hero-blob,.tagline,.scroll-cue,#preloader img,.float-whatsapp::before,.rotate-text-box .cursor{animation:none!important;}
+  }
+
   /* ===================================================================
      PDF TEMPLATE (hidden, true A4 pages, used ONLY for PDF generation)
-     display:none by default so it contributes ZERO height/scroll to the
-     live page. It is toggled to display:block only while html2pdf runs.
-     Positioned at top:0,left:0 (NEVER negative) so html2canvas can
-     correctly scroll/capture it.
+     #pdfHost is a zero-size, clipped, fixed box: it never adds scroll
+     height to the live page (that was the white space at the bottom).
+     At capture time the clone is un-clipped (see downloadPDF onclone).
+     Every .pdf-page is a FIXED 210mm x 297mm sheet.
   =================================================================== */
+  #pdfHost{position:fixed;left:0;top:0;width:0;height:0;overflow:hidden;pointer-events:none;}
   #pdfTemplate{
-    display:none;
-    position:absolute;
-    top:0;
-    left:0;
     width:210mm;
     background:#fff;
     color:#333;
     font-family:'Montserrat',sans-serif;
-    z-index:-1;
   }
   .pdf-page{
     width:210mm;
-    min-height:297mm;
+    height:297mm;
+    overflow:hidden;
     padding:16mm 16mm 20mm;
     position:relative;
     background:var(--cream);
-    page-break-after:always;
     display:flex;
     flex-direction:column;
+    color:#333;
+    font-family:'Montserrat',sans-serif;
   }
-  .pdf-page:last-child{page-break-after:auto;}
   .pdf-page.pdf-cover{padding:0;background:var(--brown-dark);color:#fff;justify-content:center;align-items:center;text-align:center;}
+  .pdf-page .hero-blob{filter:none;animation:none;}
 
   .pdf-header{display:flex;align-items:center;gap:12px;border-bottom:2px solid var(--gold);padding-bottom:10px;margin-bottom:22px;}
   .pdf-header img{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);}
@@ -349,7 +362,7 @@
   .pdf-footer-bar{position:absolute;bottom:10mm;left:16mm;right:16mm;display:flex;justify-content:space-between;font-size:8.5px;color:#9a8c85;border-top:1px solid #e9ddd3;padding-top:7px;}
 
   .pdf-cover-inner{width:100%;padding:26mm 20mm;position:relative;z-index:2;}
-  .pdf-cover-logo{width:90px;height:90px;border-radius:50%;border:3px solid var(--gold);object-fit:cover;margin-bottom:22px;box-shadow:0 10px 30px rgba(0,0,0,.3);}
+  .pdf-cover-logo{width:90px;height:90px;border-radius:50%;border:3px solid var(--gold);object-fit:cover;margin:0 auto 22px;box-shadow:0 10px 30px rgba(0,0,0,.3);}
   .pdf-cover-title{font-family:'Playfair Display',serif;font-size:36px;font-weight:800;margin-bottom:10px;}
   .pdf-cover-tag{font-size:14px;font-style:italic;color:var(--gold-light);margin-bottom:24px;}
   .pdf-cover-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:30px;}
@@ -358,43 +371,789 @@
   .pdf-cover-banner img{width:100%;height:100%;object-fit:cover;}
   .pdf-cover-contact{font-size:10.5px;color:#f0e4da;letter-spacing:.3px;}
 
-  .pdf-circle-row{display:flex;gap:16px;justify-content:center;margin-bottom:24px;}
-  .pdf-circle-row img{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:var(--shadow);}
-  .pdf-vmv-grid{display:flex;gap:14px;}
-  .pdf-vmv-card{flex:1;background:#fff;border-radius:10px;padding:16px;box-shadow:0 4px 14px rgba(90,62,54,.1);}
-  .pdf-vmv-card i{color:var(--gold);font-size:17px;margin-bottom:6px;display:block;}
-  .pdf-vmv-card h4{font-family:'Playfair Display',serif;color:var(--brown-dark);font-size:14px;margin-bottom:6px;}
-  .pdf-vmv-card p{font-size:10.5px;color:#555;margin:0;}
+  /* Page 2 — Vision / Mission / Values (cards stretch to fill the page) */
+  .pdf-circle-row{display:flex;gap:18px;justify-content:center;margin-bottom:24px;}
+  .pdf-circle-row img{width:115px;height:115px;border-radius:50%;object-fit:cover;border:3px solid #fff;box-shadow:var(--shadow);}
+  .pdf-vmv-grid{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;}
+  .pdf-vmv-card{flex:1;min-height:0;background:#fff;border-radius:10px;padding:18px 26px;box-shadow:0 4px 14px rgba(90,62,54,.1);display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;}
+  .pdf-vmv-card i{color:var(--gold);font-size:22px;margin-bottom:8px;display:block;}
+  .pdf-vmv-card h4{font-family:'Playfair Display',serif;color:var(--brown-dark);font-size:16px;margin-bottom:8px;}
+  .pdf-vmv-card p{font-size:12px;line-height:1.7;color:#555;margin:0;}
 
-  .pdf-about-text{font-size:11.5px;color:#444;text-align:justify;margin-bottom:20px;}
+  /* Page 3 — About */
+  .pdf-about-text{font-size:12.5px;line-height:1.8;color:#444;text-align:justify;margin-bottom:20px;}
   .pdf-stat-row{display:flex;gap:14px;margin-bottom:22px;}
   .pdf-stat-box{flex:1;text-align:center;background:#fff;border-radius:10px;padding:14px 6px;box-shadow:0 4px 14px rgba(90,62,54,.1);}
   .pdf-stat-box .num{font-family:'Playfair Display',serif;font-size:18px;color:var(--gold);font-weight:800;}
   .pdf-stat-box .label{font-size:9px;color:#888;text-transform:uppercase;letter-spacing:.5px;}
-  .pdf-img-row{display:flex;gap:14px;}
-  .pdf-img-row .pdf-img{flex:1;height:120px;border-radius:10px;overflow:hidden;box-shadow:var(--shadow);}
-  .pdf-img-row .pdf-img img{width:100%;height:100%;object-fit:cover;}
+  .pdf-img-row{display:flex;gap:14px;flex:1;min-height:0;max-height:90mm;}
+  .pdf-img-row .pdf-img{flex:1;position:relative;border-radius:10px;overflow:hidden;box-shadow:var(--shadow);}
+  .pdf-img-row .pdf-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 
-  .pdf-service-card{display:flex;gap:16px;background:#fff;border-radius:10px;padding:14px;margin-bottom:16px;box-shadow:0 4px 14px rgba(90,62,54,.1);align-items:center;}
-  .pdf-service-card img{width:130px;height:95px;object-fit:cover;border-radius:8px;flex-shrink:0;}
-  .pdf-service-card h4{font-family:'Playfair Display',serif;color:var(--brown-dark);font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  /* Page 4 — Services (cards stretch to fill the page) */
+  .pdf-service-list{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0;}
+  .pdf-service-card{display:flex;gap:18px;flex:1;min-height:0;background:#fff;border-radius:10px;padding:14px;box-shadow:0 4px 14px rgba(90,62,54,.1);align-items:center;}
+  .pdf-svc-img{width:46%;align-self:stretch;position:relative;border-radius:8px;overflow:hidden;flex-shrink:0;}
+  .pdf-svc-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+  .pdf-svc-text{flex:1;}
+  .pdf-service-card h4{font-family:'Playfair Display',serif;color:var(--brown-dark);font-size:16px;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
   .pdf-service-card h4 i{color:var(--gold);}
-  .pdf-service-card p{font-size:10.5px;color:#555;margin:0;}
+  .pdf-service-card p{font-size:12px;line-height:1.7;color:#555;margin:0;}
 
-  .pdf-gallery-grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1;}
-  .pdf-gallery-grid2 .g-item{border-radius:12px;overflow:hidden;box-shadow:var(--shadow);height:100%;min-height:110mm;}
-  .pdf-gallery-grid2 .g-item img{width:100%;height:100%;object-fit:cover;}
+  /* Page 5 — Gallery (2 x 2, fills remaining height exactly) */
+  .pdf-gallery-grid2{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:14px;flex:1;min-height:0;}
+  .pdf-gallery-grid2 .g-item{position:relative;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);min-height:0;}
+  .pdf-gallery-grid2 .g-item img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
 
+  /* Page 6 — Impact */
   .pdf-counters{display:flex;gap:14px;margin-bottom:22px;}
   .pdf-counter-box{flex:1;text-align:center;background:#fff;border-radius:10px;padding:18px 6px;box-shadow:0 4px 14px rgba(90,62,54,.1);}
   .pdf-counter-box .num{font-family:'Playfair Display',serif;font-size:24px;font-weight:800;color:var(--brown-dark);}
-  .pdf-counter-box .num span{color:var(--gold);}
+  .pdf-counter-box .num span{color:var(--gold);font-family:'Playfair Display',serif;}
   .pdf-counter-box .label{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:#888;}
+  .pdf-chart-box{background:#fff;border-radius:10px;padding:16px;box-shadow:0 4px 14px rgba(90,62,54,.1);margin-bottom:18px;}
+  .pdf-chart-box canvas{display:block;width:100%!important;height:auto!important;}
 
-  /* Fixed: give the chart wrapper a real, positioned box instead of
-     forcing conflicting width/height directly on the <canvas> — this
-     was causing the PDF charts to render blank. */
-  .pdf-chart-box{background:#fff;border-radius:10px;padding:16px;box-shadow:0 4px 14px rgba(90,62,54,.1);margin-bottom:18px;position:relative;height:240px;}
-  .pdf-chart-box canvas{max-width:100%;}
+  /* Page 7 — Contact */
+  .pdf-contact-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:18px;margin:10px 0 18px;flex:1;min-height:0;}
+  .pdf-contact-card{background:#fff;border-radius:10px;padding:22px;box-shadow:0 4px 14px rgba(90,62,54,.1);display:flex;flex-direction:column;justify-content:center;}
+  .pdf-contact-card h4{font-family:'Playfair Display',serif;color:var(--brown-dark);font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .pdf-contact-card h4 i{color:var(--gold);}
+  .pdf-contact-card p{font-size:11.5px;color:#555;margin-bottom:4px;line-height:1.7;}
+  .pdf-thanks{margin-top:auto;text-align:center;padding-top:20px;border-top:1px dashed var(--gold);}
+  .pdf-thanks h3{font-family:'Playfair Display',serif;color:var(--brown-dark);font-size:16px;margin-bottom:4px;}
+  .pdf-thanks p{font-size:10px;color:#888;margin:0;}
+</style>
+</head>
+<body id="profile">
 
-  
+  <!-- PRELOADER -->
+  <div id="preloader"><img src="assets/images/logo.jpg" alt="Loading"/></div>
+
+  <!-- NAVBAR -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-logo">
+      <img src="assets/images/logo.jpg" alt="Inayas Logo"/>
+      <span>Inayas Catering & Events</span>
+    </div>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#about">About</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="#gallery">Gallery</a></li>
+      <li><a href="#impact">Impact</a></li>
+      <li><a href="#quote">Get a Quote</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <a href="#quote" class="nav-cta"><i class="fa-brands fa-whatsapp"></i> Get Quote</a>
+    <div class="hamburger" id="hamburger" role="button" tabindex="0" aria-label="Toggle menu"><span></span><span></span><span></span></div>
+  </nav>
+
+  <!-- ============== COVER HERO (+ floating stat bar, outside the clipped section) ============== -->
+  <div class="hero-wrap">
+    <section class="slide" id="hero">
+      <video class="slide-video" id="heroVideo" autoplay muted loop playsinline poster="assets/images/others/header-bg.jpeg">
+        <source src="assets/images/gallery/gallery6.mp4" type="video/mp4">
+      </video>
+      <div class="hero-blob blob1"></div>
+      <div class="hero-blob blob2"></div>
+      <div class="overlay"></div>
+      <img src="assets/images/logo.jpg" alt="Inayas Logo" class="logo"/>
+
+      <div class="content container">
+        <div class="hero-glass-card">
+          <span class="hero-kicker" id="heroKicker">Premium Catering & Event Management</span>
+          <h1 id="heroTitle">Inayas Catering & Events</h1>
+
+          <div class="tagline-wrap" id="heroTag">
+            <p class="tagline">Unique Flavours, Unforgettable Events</p>
+          </div>
+
+          <p class="hero-rotator" id="heroRotator">
+            <span class="static-label">Specialists in</span>
+            <span class="rotate-text-box"><span id="rotateText">Weddings</span><span class="cursor"></span></span>
+          </p>
+
+          <div class="hero-badges" id="heroBadges">
+            <span class="badge"><i class="fa-solid fa-award"></i> BBBEE Level 1</span>
+            <span class="badge"><i class="fa-solid fa-user-check"></i> 100% Black-Owned</span>
+            <span class="badge"><i class="fa-solid fa-circle-check"></i> CSD Registered</span>
+          </div>
+          <div class="hero-btns" id="heroBtns">
+            <button class="btn btn-download" id="downloadBtn" type="button" onclick="downloadPDF()"><i class="fa-solid fa-file-pdf"></i> Download Profile as PDF</button>
+            <a href="#quote" class="btn btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Request a Quote</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="scroll-cue"><i class="fa-solid fa-chevron-down"></i></div>
+    </section>
+
+    <!-- Floating stat bridge -->
+    <div class="hero-stats-bar" id="heroStatsBar">
+      <div class="hero-stat-card"><i class="fa-solid fa-champagne-glasses"></i><div class="num">120+</div><div class="lbl">Events Served</div></div>
+      <div class="hero-stat-card"><i class="fa-solid fa-utensils"></i><div class="num">5,000+</div><div class="lbl">Meals Prepared</div></div>
+      <div class="hero-stat-card"><i class="fa-solid fa-calendar-days"></i><div class="num">2024</div><div class="lbl">Founded</div></div>
+    </div>
+  </div>
+
+  <!-- VISION / MISSION / VALUES -->
+  <section id="vmv">
+    <div class="container">
+      <h2 data-aos="fade-up">Our Vision, Mission & Values</h2>
+      <div style="display:flex; flex-wrap:wrap; align-items:center; justify-content:center;" data-aos="fade-up" data-aos-delay="100">
+        <div class="circle"><img src="assets/images/vision-mission-values/mission1.jpeg" alt="Mission"/></div>
+        <div class="circle"><img src="assets/images/vision-mission-values/event1.jpeg" alt="Vision"/></div>
+        <div class="circle"><img src="assets/images/vision-mission-values/value.jpeg" alt="Values"/></div>
+      </div>
+
+      <div class="vmv-grid">
+        <div class="vmv-card" data-aos="fade-up" data-aos-delay="100">
+          <i class="fa-solid fa-bullseye"></i>
+          <h3>Mission</h3>
+          <p>To deliver state-of-the-art catering & event management, ensuring client satisfaction and reaching 100% of the commercial and public market.</p>
+        </div>
+        <div class="vmv-card" data-aos="fade-up" data-aos-delay="200">
+          <i class="fa-solid fa-eye"></i>
+          <h3>Vision</h3>
+          <p>To evolve into a nationally recognized, reliable brand for exceptional culinary and event experiences.</p>
+        </div>
+        <div class="vmv-card" data-aos="fade-up" data-aos-delay="300">
+          <i class="fa-solid fa-heart"></i>
+          <h3>Values</h3>
+          <p>Serving clients with love, care, and building long-term relationships.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT US -->
+  <section class="section-alt" id="about">
+    <div class="container">
+      <h2 data-aos="fade-up">About Inayas</h2>
+      <div class="about-flex">
+        <div class="about-text" data-aos="fade-right">
+          <p>Established in 2024 in the heart of South Africa, Inayas Catering & Events stands proudly as a 100% Black-owned, BBBEE Level 1, and CSD-registered powerhouse—driven by visionary founder Hanifa Ntuli. From our first bespoke canapé platter to grand-scale gala dinners, we have rapidly become the go-to partner for clients who demand nothing short of culinary excellence and flawless execution. Our team blends time-honored African flavors with modern techniques, crafting unforgettable experiences that elevate every gathering—from intimate VIP soirées to multi-day corporate conferences. Backed by a commitment to sustainable sourcing, community empowerment, and an unyielding attention to detail, Inayas doesn't just cater events—we architect moments that resonate, inspire trust, and leave a lasting impression. Whether you're celebrating life's milestones or forging new business alliances, you can be confident Inayas Catering & Events will deliver a seamless fusion of taste, style, and professionalism.</p>
+
+          <div class="stat-row">
+            <div class="stat-box"><div class="num">2024</div><div class="label">Founded</div></div>
+            <div class="stat-box"><div class="num">Level 1</div><div class="label">BBBEE</div></div>
+            <div class="stat-box"><div class="num">100%</div><div class="label">Black-Owned</div></div>
+          </div>
+        </div>
+        <div class="about-images" data-aos="fade-left">
+          <div class="hex"><img src="assets/images/vision-mission-values/team.jpeg" alt="Team"/></div>
+          <div class="hex"><img src="assets/images/others/catering1.jpeg" alt="Catering"/></div>
+          <div class="hex"><img src="assets/images/others/catering2.jpeg" alt="Setup"/></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services">
+    <div class="container">
+      <h2 data-aos="fade-up">Our Services</h2>
+      <p class="lead-text" data-aos="fade-up"><em>Waiters/Waitresses available on request.</em></p>
+      <div class="grid-3">
+        <div class="card" data-aos="zoom-in" data-aos-delay="100">
+          <h3><i class="fa-solid fa-utensils"></i> Catering</h3>
+          <img src="assets/images/gallery/gallery5.jpeg" alt="Food"/>
+          <p>Customized menus for weddings, birthdays, and corporate events.</p>
+        </div>
+        <div class="card" data-aos="zoom-in" data-aos-delay="200">
+          <h3><i class="fa-solid fa-calendar-check"></i> Event Coordination</h3>
+          <img src="assets/images/gallery/gallery2.jpeg" alt="Coordination"/>
+          <p>Full planning & management for seamless events.</p>
+        </div>
+        <div class="card" data-aos="zoom-in" data-aos-delay="300">
+          <h3><i class="fa-solid fa-briefcase"></i> Corporate Catering</h3>
+          <img src="assets/images/menus/care1.jpeg" alt="Corporate"/>
+          <p>Office breakfasts, lunches, and conferences.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section class="section-alt" id="gallery">
+    <div class="container">
+      <h2 data-aos="fade-up">Gallery</h2>
+      <div class="swiper gallery-swiper" data-aos="fade-up">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide"><div class="mosaic"><img src="assets/images/gallery/gallery3.jpeg" alt="Gallery 3"/></div></div>
+          <div class="swiper-slide"><div class="mosaic"><img src="assets/images/gallery/gallery4.jpeg" alt="Gallery 4"/></div></div>
+          <div class="swiper-slide"><div class="mosaic"><img src="assets/images/others/fotter-bg.jpeg" alt="Gallery setup"/></div></div>
+          <div class="swiper-slide"><div class="mosaic"><img src="assets/images/gallery/gallery7.jpeg" alt="Gallery 7"/></div></div>
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMPACT & TEAM -->
+  <section id="impact">
+    <div class="container">
+      <h2 data-aos="fade-up">Impact & Team</h2>
+      <div class="counters">
+        <div class="counter-item" data-aos="fade-up">
+          <div class="count"><span data-target="120">0</span>+</div>
+          <div class="label">Events Served</div>
+        </div>
+        <div class="counter-item" data-aos="fade-up" data-aos-delay="100">
+          <div class="count"><span data-target="5000">0</span>+</div>
+          <div class="label">Meals Prepared</div>
+        </div>
+        <div class="counter-item" data-aos="fade-up" data-aos-delay="200">
+          <div class="count"><span data-target="300">0</span>+</div>
+          <div class="label">Clients Satisfied</div>
+        </div>
+      </div>
+      <div class="charts-flex">
+        <div class="chart-box" data-aos="fade-right"><canvas id="employmentChart"></canvas></div>
+        <div class="chart-box" data-aos="fade-left"><canvas id="outreachChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEAD GENERATION / WHATSAPP QUOTE FORM -->
+  <section class="lead-section" id="quote">
+    <div class="container">
+      <h2 data-aos="fade-up">Get a Free Quote via WhatsApp</h2>
+      <p class="lead-text" data-aos="fade-up">Fill in your event details below — it opens WhatsApp with your request pre-filled so we can respond promptly.</p>
+      <form class="lead-form" id="leadForm" data-aos="zoom-in">
+        <div class="row">
+          <div><label for="leadName">Full Name *</label><input type="text" id="leadName" placeholder="Your name" required/></div>
+          <div><label for="leadPhone">Phone Number *</label><input type="tel" id="leadPhone" placeholder="e.g. 071 234 5678" required/></div>
+          <div><label for="leadEmail">Email Address</label><input type="email" id="leadEmail" placeholder="you@email.com"/></div>
+          <div>
+            <label for="leadEventType">Event Type *</label>
+            <select id="leadEventType" required>
+              <option value="">Select event type</option>
+              <option>Wedding</option><option>Birthday Party</option><option>Corporate Event</option>
+              <option>Conference</option><option>Private Function</option><option>Other</option>
+            </select>
+          </div>
+          <div><label for="leadDate">Event Date</label><input type="date" id="leadDate"/></div>
+          <div><label for="leadGuests">Number of Guests</label><input type="number" id="leadGuests" placeholder="e.g. 100" min="1"/></div>
+          <div class="full"><label for="leadMessage">Message / Special Requests</label><textarea id="leadMessage" rows="4" placeholder="Tell us more about your event..."></textarea></div>
+        </div>
+        <button type="submit" class="btn"><i class="fa-brands fa-whatsapp"></i> Send Request via WhatsApp</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- CONTACT & LEGAL -->
+  <footer id="contact">
+    <div class="container">
+      <h2 style="color:#fff;" data-aos="fade-up">Talk to Us</h2>
+      <div class="footer-grid">
+        <div data-aos="fade-up">
+          <h3>Contact</h3>
+          <p><i class="fa-solid fa-phone"></i> 079 097 5335 | 079 376 8731</p>
+          <p><i class="fa-solid fa-envelope"></i> <a href="mailto:nolwazi.mhayise@gmail.com">nolwazi.mhayise@gmail.com</a></p>
+          <p><i class="fa-brands fa-instagram"></i> <a href="https://instagram.com/Inaya_Kayise" target="_blank" rel="noopener noreferrer">@Inaya_Kayise</a></p>
+          <div class="social-icons">
+            <a href="https://wa.me/27790975335" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="https://instagram.com/Inaya_Kayise" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="mailto:nolwazi.mhayise@gmail.com" aria-label="Email"><i class="fa-solid fa-envelope"></i></a>
+          </div>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="100">
+          <h3>Bank Details</h3>
+          <p>Standard Bank<br/>Acc: 10236362933<br/>Branch: 051001<br/>Cheque Account</p>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="200">
+          <h3>Company Info</h3>
+          <p>Reg: 2024/567698/07<br/>SARS TAX NO: 9686479198<br/>BBBEE Level 1</p>
+        </div>
+        <div data-aos="fade-up" data-aos-delay="300">
+          <h3>Quick Links</h3>
+          <p><a href="#about">About Us</a></p>
+          <p><a href="#services">Services</a></p>
+          <p><a href="#quote">Get a Quote</a></p>
+        </div>
+      </div>
+      <div class="footer-bottom">&copy; <span id="year"></span> Inayas Catering & Events. All Rights Reserved.</div>
+    </div>
+  </footer>
+
+  <!-- FLOATING WHATSAPP + BACK TO TOP -->
+  <a href="https://wa.me/27790975335?text=Hello%20Inayas%20Catering%2C%20I%20would%20like%20to%20enquire%20about%20your%20services." target="_blank" rel="noopener noreferrer" class="float-whatsapp" title="Chat with us on WhatsApp" aria-label="Chat with us on WhatsApp">
+    <i class="fa-brands fa-whatsapp"></i>
+  </a>
+  <div class="back-to-top" id="backToTop" title="Back to top" role="button" tabindex="0" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></div>
+
+  <!-- =====================================================================
+       HIDDEN PDF TEMPLATE — true A4 pages, used only for PDF export.
+       Wrapped in #pdfHost (zero-size, clipped, fixed) so it cannot add
+       scroll height / white space to the live page.
+  ===================================================================== -->
+  <div id="pdfHost" aria-hidden="true">
+  <div id="pdfTemplate">
+
+    <!-- PAGE 1 — COVER -->
+    <div class="pdf-page pdf-cover">
+      <div class="hero-blob blob1" style="opacity:.35;"></div>
+      <div class="hero-blob blob2" style="opacity:.35;"></div>
+      <div class="pdf-cover-inner">
+        <img src="assets/images/logo.jpg" class="pdf-cover-logo" alt="Logo"/>
+        <div class="pdf-cover-title">Inayas Catering & Events</div>
+        <div class="pdf-cover-tag">Unique Flavours, Unforgettable Events</div>
+        <div class="pdf-cover-badges">
+          <span>BBBEE Level 1</span><span>100% Black-Owned</span><span>CSD Registered</span>
+        </div>
+        <div class="pdf-cover-banner"><img src="assets/images/others/header-bg.jpeg" alt="Cover"/></div>
+        <div class="pdf-cover-contact">
+          079 097 5335 &nbsp;|&nbsp; 079 376 8731 &nbsp;|&nbsp; nolwazi.mhayise@gmail.com &nbsp;|&nbsp; @Inaya_Kayise<br/>
+          <span style="opacity:.6;">Company Profile — Generated <span id="pdfDate"></span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE 2 — VISION / MISSION / VALUES -->
+    <div class="pdf-page">
+      <div class="pdf-header">
+        <img src="assets/images/logo.jpg" alt="logo"/>
+        <span class="pdf-htitle">Inayas Catering & Events</span>
+        <span class="pdf-hsub">Company Profile</span>
+      </div>
+      <div class="pdf-h2">Our Vision, Mission & Values</div>
+      <p class="pdf-sub">The principles that guide every plate we serve and every event we host.</p>
+
+      <div class="pdf-circle-row">
+        <img src="assets/images/vision-mission-values/mission1.jpeg" alt="Mission"/>
+        <img src="assets/images/vision-mission-values/event1.jpeg" alt="Vision"/>
+        <img src="assets/images/vision-mission-values/value.jpeg" alt="Values"/>
+      </div>
+
+      <div class="pdf-vmv-grid">
+        <div class="pdf-vmv-card">
+          <i class="fa-solid fa-bullseye"></i>
+          <h4>Mission</h4>
+          <p>To deliver state-of-the-art catering & event management, ensuring client satisfaction and reaching 100% of the commercial and public market.</p>
+        </div>
+        <div class="pdf-vmv-card">
+          <i class="fa-solid fa-eye"></i>
+          <h4>Vision</h4>
+          <p>To evolve into a nationally recognized, reliable brand for exceptional culinary and event experiences.</p>
+        </div>
+        <div class="pdf-vmv-card">
+          <i class="fa-solid fa-heart"></i>
+          <h4>Values</h4>
+          <p>Serving clients with love, care, and building long-term relationships.</p>
+        </div>
+      </div>
+
+      <div class="pdf-footer-bar">
+        <span>Inayas Catering & Events</span><span>079 097 5335 | nolwazi.mhayise@gmail.com</span>
+      </div>
+    </div>
+
+    <!-- PAGE 3 — ABOUT -->
+    <div class="pdf-page">
+      <div class="pdf-header">
+        <img src="assets/images/logo.jpg" alt="logo"/>
+        <span class="pdf-htitle">Inayas Catering & Events</span>
+        <span class="pdf-hsub">Company Profile</span>
+      </div>
+      <div class="pdf-h2">About Inayas</div>
+      <p class="pdf-about-text">Established in 2024 in the heart of South Africa, Inayas Catering & Events stands proudly as a 100% Black-owned, BBBEE Level 1, and CSD-registered powerhouse—driven by visionary founder Hanifa Ntuli. From our first bespoke canapé platter to grand-scale gala dinners, we have rapidly become the go-to partner for clients who demand nothing short of culinary excellence and flawless execution. Our team blends time-honored African flavors with modern techniques, crafting unforgettable experiences that elevate every gathering—from intimate VIP soirées to multi-day corporate conferences. Backed by a commitment to sustainable sourcing, community empowerment, and an unyielding attention to detail, Inayas doesn't just cater events—we architect moments that resonate, inspire trust, and leave a lasting impression. Whether you're celebrating life's milestones or forging new business alliances, you can be confident Inayas Catering & Events will deliver a seamless fusion of taste, style, and professionalism.</p>
+
+      <div class="pdf-stat-row">
+        <div class="pdf-stat-box"><div class="num">2024</div><div class="label">Founded</div></div>
+        <div class="pdf-stat-box"><div class="num">Level 1</div><div class="label">BBBEE</div></div>
+        <div class="pdf-stat-box"><div class="num">100%</div><div class="label">Black-Owned</div></div>
+      </div>
+
+      <div class="pdf-img-row">
+        <div class="pdf-img"><img src="assets/images/vision-mission-values/team.jpeg" alt="Team"/></div>
+        <div class="pdf-img"><img src="assets/images/others/catering1.jpeg" alt="Catering"/></div>
+        <div class="pdf-img"><img src="assets/images/others/catering2.jpeg" alt="Setup"/></div>
+      </div>
+
+      <div class="pdf-footer-bar">
+        <span>Inayas Catering & Events</span><span>079 097 5335 | nolwazi.mhayise@gmail.com</span>
+      </div>
+    </div>
+
+    <!-- PAGE 4 — SERVICES -->
+    <div class="pdf-page">
+      <div class="pdf-header">
+        <img src="assets/images/logo.jpg" alt="logo"/>
+        <span class="pdf-htitle">Inayas Catering & Events</span>
+        <span class="pdf-hsub">Company Profile</span>
+      </div>
+      <div class="pdf-h2">Our Services</div>
+      <p class="pdf-sub">Waiters/Waitresses available on request.</p>
+
+      <div class="pdf-service-list">
+        <div class="pdf-service-card">
+          <div class="pdf-svc-img"><img src="assets/images/gallery/gallery5.jpeg" alt="Food"/></div>
+          <div class="pdf-svc-text"><h4><i class="fa-solid fa-utensils"></i> Catering</h4><p>Customized menus for weddings, birthdays, and corporate events.</p></div>
+        </div>
+        <div class="pdf-service-card">
+          <div class="pdf-svc-img"><img src="assets/images/gallery/gallery2.jpeg" alt="Coordination"/></div>
+          <div class="pdf-svc-text"><h4><i class="fa-solid fa-calendar-check"></i> Event Coordination</h4><p>Full planning & management for seamless events.</p></div>
+        </div>
+        <div class="pdf-service-card">
+          <div class="pdf-svc-img"><img src="assets/images/menus/care1.jpeg" alt="Corporate"/></div>
+          <div class="pdf-svc-text"><h4><i class="fa-solid fa-briefcase"></i> Corporate Catering</h4><p>Office breakfasts, lunches, and conferences.</p></div>
+        </div>
+      </div>
+
+      <div class="pdf-footer-bar">
+        <span>Inayas Catering & Events</span><span>079 097 5335 | nolwazi.mhayise@gmail.com</span>
+      </div>
+    </div>
+
+    <!-- PAGE 5 — GALLERY -->
+    <div class="pdf-page">
+      <div class="pdf-header">
+        <img src="assets/images/logo.jpg" alt="logo"/>
+        <span class="pdf-htitle">Inayas Catering & Events</span>
+        <span class="pdf-hsub">Company Profile</span>
+      </div>
+      <div class="pdf-h2">Gallery</div>
+      <p class="pdf-sub">A glimpse into our flavours, setups, and memorable moments.</p>
+      <div class="pdf-gallery-grid2">
+        <div class="g-item"><img src="assets/images/gallery/gallery3.jpeg" alt=""/></div>
+        <div class="g-item"><img src="assets/images/gallery/gallery4.jpeg" alt=""/></div>
+        <div class="g-item"><img src="assets/images/others/fotter-bg.jpeg" alt=""/></div>
+        <div class="g-item"><img src="assets/images/gallery/gallery7.jpeg" alt=""/></div>
+      </div>
+      <div class="pdf-footer-bar">
+        <span>Inayas Catering & Events</span><span>079 097 5335 | nolwazi.mhayise@gmail.com</span>
+      </div>
+    </div>
+
+    <!-- PAGE 6 — IMPACT & TEAM -->
+    <div class="pdf-page">
+      <div class="pdf-header">
+        <img src="assets/images/logo.jpg" alt="logo"/>
+        <span class="pdf-htitle">Inayas Catering & Events</span>
+        <span class="pdf-hsub">Company Profile</span>
+      </div>
+      <div class="pdf-h2">Impact & Team</div>
+      <p class="pdf-sub">Our growing footprint since launching in 2024.</p>
+
+      <div class="pdf-counters">
+        <div class="pdf-counter-box"><div class="num">120<span>+</span></div><div class="label">Events Served</div></div>
+        <div class="pdf-counter-box"><div class="num">5,000<span>+</span></div><div class="label">Meals Prepared</div></div>
+        <div class="pdf-counter-box"><div class="num">300<span>+</span></div><div class="label">Clients Satisfied</div></div>
+      </div>
+
+      <div class="pdf-chart-box"><canvas id="pdfEmploymentChart" width="600" height="260"></canvas></div>
+      <div class="pdf-chart-box"><canvas id="pdfOutreachChart" width="600" height="260"></canvas></div>
+
+      <div class="pdf-footer-bar">
+        <span>Inayas Catering & Events</span><span>079 097 5335 | nolwazi.mhayise@gmail.com</span>
+      </div>
+    </div>
+
+    <!-- PAGE 7 — CONTACT & LEGAL -->
+    <div class="pdf-page">
+      <div class="pdf-header">
+        <img src="assets/images/logo.jpg" alt="logo"/>
+        <span class="pdf-htitle">Inayas Catering & Events</span>
+        <span class="pdf-hsub">Company Profile</span>
+      </div>
+      <div class="pdf-h2">Talk to Us</div>
+      <p class="pdf-sub">Reach out — we would be glad to bring your next event to life.</p>
+
+      <div class="pdf-contact-grid">
+        <div class="pdf-contact-card">
+          <h4><i class="fa-solid fa-address-book"></i> Contact</h4>
+          <p>Phone: 079 097 5335 | 079 376 8731</p>
+          <p>Email: nolwazi.mhayise@gmail.com</p>
+          <p>Instagram: @Inaya_Kayise</p>
+        </div>
+        <div class="pdf-contact-card">
+          <h4><i class="fa-solid fa-building-columns"></i> Bank Details</h4>
+          <p>Standard Bank</p>
+          <p>Acc: 10236362933</p>
+          <p>Branch: 051001</p>
+          <p>Cheque Account</p>
+        </div>
+        <div class="pdf-contact-card">
+          <h4><i class="fa-solid fa-file-contract"></i> Company Info</h4>
+          <p>Reg: 2024/567698/07</p>
+          <p>SARS TAX NO: 9686479198</p>
+          <p>BBBEE Level 1</p>
+        </div>
+        <div class="pdf-contact-card">
+          <h4><i class="fa-solid fa-link"></i> Quick Links</h4>
+          <p>About Us · Services · Gallery</p>
+          <p>Impact & Team · Get a Quote</p>
+        </div>
+      </div>
+
+      <div class="pdf-thanks">
+        <h3>Thank You for Considering Inayas Catering & Events</h3>
+        <p>&copy; <span id="pdfYear"></span> Inayas Catering & Events. All Rights Reserved.</p>
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <!-- ===== END PDF TEMPLATE ===== -->
+
+  <!-- ===== SCRIPTS ===== -->
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <script>
+    /* ===== PRELOADER + PAGE START =====
+       Runs once on window "load" — with a 6s safety net so a slow video or
+       blocked CDN can never leave the preloader (or the hidden hero text
+       and stat cards) stuck on screen. */
+    let pageStarted = false;
+    function startPage(){
+      if(pageStarted) return;
+      pageStarted = true;
+      document.getElementById('preloader').classList.add('hide');
+      heroIntro();
+      startRotator();
+      if(window.AOS) AOS.refresh();
+    }
+    window.addEventListener('load', startPage);
+    setTimeout(startPage, 6000);
+
+    /* ===== AOS INIT ===== */
+    if(window.AOS){ AOS.init({ duration: 900, once: true, easing: 'ease-out-cubic' }); }
+
+    /* ===== NAVBAR SCROLL + MOBILE TOGGLE ===== */
+    const navbar = document.getElementById('navbar');
+    const backToTop = document.getElementById('backToTop');
+    function onScroll(){
+      navbar.classList.toggle('scrolled', window.scrollY > 60);
+      backToTop.style.display = window.scrollY > 500 ? 'flex' : 'none';
+    }
+    window.addEventListener('scroll', onScroll, {passive:true});
+    onScroll();
+
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+    function toggleMenu(){
+      navLinks.classList.toggle('open');
+      hamburger.classList.toggle('active');
+    }
+    hamburger.addEventListener('click', toggleMenu);
+    hamburger.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleMenu(); } });
+    document.querySelectorAll('.nav-links a').forEach(a=> a.addEventListener('click', ()=>{
+      navLinks.classList.remove('open');
+      hamburger.classList.remove('active');
+    }));
+
+    /* ===== BACK TO TOP ===== */
+    function scrollTopSmooth(){ window.scrollTo({top:0, behavior:'smooth'}); }
+    backToTop.addEventListener('click', scrollTopSmooth);
+    backToTop.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); scrollTopSmooth(); } });
+
+    /* ===== HERO GSAP INTRO (with no-GSAP fallback so nothing stays hidden) ===== */
+    function heroIntro(){
+      if(!window.gsap){
+        document.querySelectorAll('#heroKicker, #heroTitle, #heroTag, #heroRotator, #heroBadges, #heroBtns, .hero-stat-card')
+          .forEach(el=>{ el.style.opacity = 1; el.style.transform = 'none'; });
+        return;
+      }
+      gsap.timeline({defaults:{ease:'power3.out'}})
+        .to('#heroKicker', {opacity:1, y:0, duration:.7})
+        .to('#heroTitle', {opacity:1, y:0, duration:1}, '-=0.3')
+        .to('#heroTag', {opacity:1, y:0, duration:.8}, '-=0.5')
+        .to('#heroRotator', {opacity:1, y:0, duration:.7}, '-=0.4')
+        .to('#heroBadges', {opacity:1, y:0, duration:.8}, '-=0.3')
+        .to('#heroBtns', {opacity:1, y:0, duration:.8}, '-=0.4')
+        .to('.hero-stat-card', {opacity:1, y:0, duration:.7, stagger:.15}, '-=0.3');
+    }
+
+    /* ===== LIVE ANIMATED ROTATING TEXT (typewriter) ===== */
+    const rotatorWords = ['Weddings','Corporate Functions','Private Celebrations','Conferences','Milestone Occasions'];
+    const rotateEl = document.getElementById('rotateText');
+    let rWordIndex = 0, rCharIndex = 0, rDeleting = false;
+
+    function startRotator(){
+      typeRotator();
+    }
+
+    function typeRotator(){
+      const currentWord = rotatorWords[rWordIndex];
+      if(!rDeleting){
+        rCharIndex++;
+        rotateEl.textContent = currentWord.substring(0, rCharIndex);
+        if(rCharIndex === currentWord.length){
+          rDeleting = true;
+          setTimeout(typeRotator, 1400);
+          return;
+        }
+      } else {
+        rCharIndex--;
+        rotateEl.textContent = currentWord.substring(0, rCharIndex);
+        if(rCharIndex === 0){
+          rDeleting = false;
+          rWordIndex = (rWordIndex + 1) % rotatorWords.length;
+        }
+      }
+      const speed = rDeleting ? 45 : 90;
+      setTimeout(typeRotator, speed);
+    }
+
+    /* ===== SWIPER GALLERY ===== */
+    if(window.Swiper){
+      new Swiper('.gallery-swiper', {
+        loop:true,
+        autoplay:{ delay:3000, disableOnInteraction:false },
+        speed:800,
+        spaceBetween:20,
+        slidesPerView:1,
+        pagination:{ el:'.swiper-pagination', clickable:true },
+        navigation:{ nextEl:'.swiper-button-next', prevEl:'.swiper-button-prev' },
+        breakpoints:{ 640:{ slidesPerView:2 }, 1024:{ slidesPerView:3 } }
+      });
+    }
+
+    /* ===== ANIMATED COUNTERS ===== */
+    const counters = document.querySelectorAll('.count span');
+    let countersStarted = false;
+    function animateCounters(){
+      counters.forEach(el=>{
+        const target = +el.getAttribute('data-target');
+        let current = 0;
+        const step = Math.max(target/80, 1);
+        const update = ()=>{
+          current += step;
+          if(current < target){ el.textContent = Math.floor(current).toLocaleString(); requestAnimationFrame(update); }
+          else { el.textContent = target.toLocaleString(); }
+        };
+        update();
+      });
+    }
+    const impactSection = document.getElementById('impact');
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting && !countersStarted){ animateCounters(); countersStarted = true; }
+      });
+    }, { threshold:0.2 });
+    observer.observe(impactSection);
+
+    /* ===== CHART.JS — LIVE SITE (unchanged data) ===== */
+    if(window.Chart){
+      new Chart(document.getElementById('employmentChart'), {
+        type:'bar',
+        data:{ labels:['Management','Chefs','Staff','Volunteers'],
+          datasets:[{ label:'Number of People', data:[2,3,5,3], backgroundColor:'rgba(210,155,99,0.8)', borderRadius:6 }] },
+        options:{responsive:true, plugins:{legend:{display:false}, title:{display:true,text:'Our Team Structure'}}}
+      });
+      new Chart(document.getElementById('outreachChart'), {
+        type:'pie',
+        data:{ labels:['Events Served','Meals Prepared','Clients Satisfied'],
+          datasets:[{ data:[120,5000,300], backgroundColor:['rgba(210,155,99,0.85)','rgba(90,62,54,0.85)','rgba(255,205,86,0.85)'] }] },
+        options:{responsive:true, plugins:{title:{display:true,text:'Our Impact'}}}
+      });
+
+      /* ===== CHART.JS — PDF TEMPLATE (same data, fixed size, static, hi-DPI) =====
+         responsive:false => the charts keep a fixed size inside the clipped
+         zero-size host instead of collapsing to 0 height. */
+      new Chart(document.getElementById('pdfEmploymentChart'), {
+        type:'bar',
+        data:{ labels:['Management','Chefs','Staff','Volunteers'],
+          datasets:[{ label:'Number of People', data:[2,3,5,3], backgroundColor:'rgba(210,155,99,0.85)', borderRadius:4 }] },
+        options:{responsive:false, animation:false, devicePixelRatio:2, plugins:{legend:{display:false}, title:{display:true,text:'Our Team Structure',font:{size:11}}}}
+      });
+      new Chart(document.getElementById('pdfOutreachChart'), {
+        type:'pie',
+        data:{ labels:['Events Served','Meals Prepared','Clients Satisfied'],
+          datasets:[{ data:[120,5000,300], backgroundColor:['rgba(210,155,99,0.85)','rgba(90,62,54,0.85)','rgba(255,205,86,0.85)'] }] },
+        options:{responsive:false, animation:false, devicePixelRatio:2, plugins:{title:{display:true,text:'Our Impact',font:{size:11}}}}
+      });
+    }
+
+    /* ===== WHATSAPP LEAD FORM ===== */
+    document.getElementById('leadForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('leadName').value.trim();
+      const phone = document.getElementById('leadPhone').value.trim();
+      const email = document.getElementById('leadEmail').value.trim() || 'N/A';
+      const eventType = document.getElementById('leadEventType').value || 'N/A';
+      const date = document.getElementById('leadDate').value || 'N/A';
+      const guests = document.getElementById('leadGuests').value || 'N/A';
+      const message = document.getElementById('leadMessage').value.trim() || 'N/A';
+      const text =
+`Hello Inayas Catering & Events,
+
+New Quote Request
+Name: ${name}
+Phone: ${phone}
+Email: ${email}
+Event Type: ${eventType}
+Event Date: ${date}
+Number of Guests: ${guests}
+Message: ${message}`;
+      window.open(`https://wa.me/27790975335?text=${encodeURIComponent(text)}`, '_blank');
+    });
+
+    /* ===== DATES ===== */
+    document.getElementById('year').textContent = new Date().getFullYear();
+    document.getElementById('pdfYear').textContent = new Date().getFullYear();
+    document.getElementById('pdfDate').textContent = new Date().toLocaleDateString('en-ZA',{year:'numeric',month:'long',day:'numeric'});
+
+    /* ===== PDF DOWNLOAD =====
+       Captures each fixed A4 .pdf-page separately (html2canvas) and places
+       it full-bleed on its own jsPDF page. The old approach cloned the
+       template while it was still positioned at left:-10000px, so the clone
+       rendered off-screen => blank white PDF. Here the clone is un-clipped
+       and every other element is hidden in onclone, so only the page shows. */
+    async function downloadPDF(){
+      const btn = document.getElementById('downloadBtn');
+      const originalLabel = btn.innerHTML;
+      btn.disabled = true;
+
+      try{
+        if(!window.html2canvas || !window.jspdf){
+          throw new Error('PDF libraries failed to load. Check your internet connection and reload the page.');
+        }
+        if(document.fonts && document.fonts.ready){ await document.fonts.ready; }
+
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait', compress:true });
+        const pages = document.querySelectorAll('#pdfTemplate .pdf-page');
+
+        for(let i = 0; i < pages.length; i++){
+          btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparing page ' + (i + 1) + ' of ' + pages.length + '...';
+          await new Promise(r => setTimeout(r, 30)); // let the label repaint
+
+          const canvas = await html2canvas(pages[i], {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            windowWidth: 794,
+            scrollX: 0,
+            scrollY: 0,
+            onclone: (clonedDoc)=>{
+              const host = clonedDoc.getElementById('pdfHost');
+              host.style.cssText = 'position:static;width:auto;height:auto;overflow:visible;';
+              Array.from(clonedDoc.body.children).forEach(el=>{
+                if(el !== host){ el.style.display = 'none'; }
+              });
+            }
+          });
+
+          if(i > 0){ pdf.addPage('a4', 'portrait'); }
+          pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+        }
+
+        pdf.save('Inayas_Catering_Company_Profile.pdf');
+      }catch(err){
+        console.error('PDF export failed:', err);
+        alert('Sorry, the PDF could not be generated.\n\nIf you opened this file directly from your computer (file://), please run it from a local server or your hosting so the images can load, then try again.');
+      }finally{
+        btn.innerHTML = originalLabel;
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
